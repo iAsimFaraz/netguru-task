@@ -1,8 +1,11 @@
 const express = require("express");
+require('dotenv').config()
 const bodyParser = require("body-parser");
-const { authFactory, AuthError } = require("./auth");
 
-const PORT = 3000;
+const { authFactory, AuthError, authUser } = require("./src/auth");
+const { create, get } = require('./src/controller')
+
+const PORT = process.env.APP_PORT || 3000;
 const { JWT_SECRET } = process.env;
 
 if (!JWT_SECRET) {
@@ -37,6 +40,22 @@ app.post("/auth", (req, res, next) => {
     next(error);
   }
 });
+
+app.post('/movies', authUser, async (req, res, next) => {
+  try {
+    await create(req, res);
+  } catch (err) {
+    next(err);
+  }
+})
+
+app.get('/movies', authUser, async (req, res, next) => {
+  try {
+    await get(req, res);
+  } catch (err) {
+    next(err);
+  }
+})
 
 app.use((error, _, res, __) => {
   console.error(

@@ -41,7 +41,22 @@ const authFactory = (secret) => (username, password) => {
   );
 };
 
+function authUser(req, res, next){
+    var token = req.header('Authorization')
+    if(!token || !token.includes('Bearer')) return res.status(401).send('Unautherized user');
+    token = token.replace("Bearer ","");
+    try {
+        const isVerified = jwt.verify(token, process.env.JWT_SECRET)
+        req.user = isVerified
+        next();
+    } catch (error) {
+        res.status(400).send('Invalid token')
+    }
+
+}
+
 module.exports = {
   authFactory,
   AuthError,
+  authUser
 };
